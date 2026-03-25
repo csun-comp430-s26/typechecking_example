@@ -1,21 +1,41 @@
+import java.util.Map;
+import java.util.HashMap;
+
 public class Typechecker {
-    // def typeof(exp: Exp): Type = {
-    //   exp match {
-    //     case IntegerLiteralExp(_) => IntType
-    //     case BooleanLiteralExp(_) => BoolType
-    //     case BinopExp(leftExp, op, rightExp) => {
-    //       (typeof(leftExp), op, typeof(rightExp)) match {
-    //         case (IntType, PlusOp, IntType) => IntType
-    //         case (BoolType, AndOp, BoolType) => BoolType
-    //         case (IntType, LessThanOp, IntType) => BoolType
-    //         case (t1, EqualsOp, t2) if t1 == t2 => BoolType
-    //       }
-    //     }
-    //   }
-    // }
-    // FOR NEXT TIME: add variables
-    public static Type typeof(final Exp exp) throws IllTypedException {
-        if (exp instanceof IntegerLiteralExp) {
+    // FOR NEXT TIME: port to Scala, structures
+    public static void typecheckProgram(final Program program) throws IllTypedException {
+        final Map<Variable, Type> typeEnv = new HashMap<Variable, Type>();
+        for (final Stmt stmt : program.stmts()) {
+            typecheckStmt(stmt, typeEnv);
+        }
+    }
+    
+    public static void typecheckStmt(final Stmt stmt,
+                                     final Map<Variable, Type> typeEnv) throws IllTypedException {
+        if (stmt instanceof VardecStmt vardecStmt) {
+            if (typeEnv.containsKey(vardecStmt.variable())) {
+                throw new IllTypedException("Variable already in scope: " + vardecStmt.variable());
+            }
+            final Type expType = typeof(vardecStmt.initializer(), typeEnv);
+            if (!vardecStmt.type().equals(expType)) {
+                throw new IllTypedException("Expected type: " + vardecStmt.type() +
+                                            "; got type: " + expType);
+            }
+            typeEnv.put(vardecStmt.variable(), vardecStmt.type());
+        } else {
+            throw new IllTypedException("Unrecognized statement: " + stmt);
+        }
+    }
+    
+    public static Type typeof(final Exp exp,
+                              final Map<Variable, Type> typeEnv) throws IllTypedException {
+        if (exp instanceof VariableExp varExp) {
+            if (typeEnv.containsKey(varExp.name())) {
+                return typeEnv.get(varExp.name());
+            } else {
+                throw new IllTypedException("Not in scope: " + varExp.name());
+            }
+        } else if (exp instanceof IntegerLiteralExp) {
             // 42: int
             return new IntType();
         } else if (exp instanceof BooleanLiteralExp) {
