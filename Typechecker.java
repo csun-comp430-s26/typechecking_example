@@ -13,6 +13,7 @@ public class Typechecker {
     //     }
     //   }
     // }
+    // FOR NEXT TIME: add variables
     public static Type typeof(final Exp exp) throws IllTypedException {
         if (exp instanceof IntegerLiteralExp) {
             // 42: int
