@@ -12,6 +12,8 @@ public class Typechecker {
     
     public static void typecheckStmt(final Stmt stmt,
                                      final Map<Variable, Type> typeEnv) throws IllTypedException {
+
+
         if (stmt instanceof VardecStmt vardecStmt) {
             if (typeEnv.containsKey(vardecStmt.variable())) {
                 throw new IllTypedException("Variable already in scope: " + vardecStmt.variable());
@@ -43,8 +45,8 @@ public class Typechecker {
             return new BoolType();
         } else if (exp instanceof BinopExp binopExp) {
             // exp op exp: ???
-            final Type leftType = typeof(binopExp.left());
-            final Type rightType = typeof(binopExp.right());
+            final Type leftType = typeof(binopExp.left(), typeEnv);
+            final Type rightType = typeof(binopExp.right(), typeEnv);
             if (leftType instanceof IntType &&
                 rightType instanceof IntType &&
                 binopExp.op() instanceof PlusOp) {
